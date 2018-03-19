@@ -7,7 +7,7 @@ IMPURITY = 4
 WEIGHTED_N_NODES_SAMPLES = 6
 
 
-def prediction_path_tree(tree, x, feature_names):
+def prediction_path_sklearn(tree, x, feature_names):
     """Compute the decision path in a sklearn tree, and return a list of data of the nodes in the path.
 
     Args:

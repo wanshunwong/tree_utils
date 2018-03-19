@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from classifiers.sklearn_tree import prediction_path_tree
+from classifiers.sklearn import prediction_path_sklearn
 from tree_path import TreePath
 
 
@@ -33,11 +33,12 @@ def prediction_path(classifier, x):
     x, feature_names = _format_input(x)
 
     if isinstance(classifier, DecisionTreeClassifier) or isinstance(classifier, DecisionTreeRegressor):
-        return TreePath(prediction_path_tree(classifier, x, feature_names))
-    elif isinstance(classifier, RandomForestClassifier) or isinstance(classifier, RandomForestRegressor):
+        return TreePath(prediction_path_sklearn(classifier, x, feature_names))
+
+    if isinstance(classifier, RandomForestClassifier) or isinstance(classifier, RandomForestRegressor):
         paths = []
         for estimator in classifier.estimators_:
-            paths.append(TreePath(prediction_path_tree(estimator, x, feature_names)))
+            paths.append(TreePath(prediction_path_sklearn(estimator, x, feature_names)))
         return paths
-    else:
-        raise ValueError("{} is not supported.".format(classifier.__class__))
+
+    raise ValueError("{} is not supported.".format(classifier.__class__))
