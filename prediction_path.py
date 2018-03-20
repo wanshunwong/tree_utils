@@ -1,77 +1,60 @@
 from classifiers.sklearn import prediction_path_sklearn
-from tree_path import TreePath
+from classifiers.xgboost import prediction_path_xgboost
+from utilities import import_decorator
 
 
-def import_decorator(func):
-    def decorated_func(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except ImportError:
-            return None
-    return decorated_func
-
-
-def _format_input(x):
-    for f in [_format_list, _format_numpy, _format_pandas]:
-        result = f(x)
-        if result is not None:
-            return result
-
-    raise ValueError("x should be a list, numpy.ndarray or pandas.Series.")
-
-
-def _format_list(x):
-    if isinstance(x, list):
-        return x, ["Feature_{}".format(i) for i in range(len(x))]
-
-
-@import_decorator
-def _format_numpy(x):
-    import numpy as np
-    if isinstance(x, np.ndarray):
-        x = x.flatten()
-        return x, ["Feature_{}".format(i) for i in range(len(x))]
-
-
-@import_decorator
-def _format_pandas(x):
-    import pandas as pd
-    if isinstance(x, pd.Series):
-        return x.values.flatten(), x.index.tolist()
-
-
-def prediction_path(classifier, x):
+def prediction_path(classifier, x, tree_index=None):
     """Compute and return the prediction path
 
     Args:
         classifier: A tree-based or forest-based machine learning classifier.
-        x: A numpy array or a row of a pandas.DataFrame, i.e. a pandas.Series.
+        x (list, numpy.ndarray, or pandas.Series): A feature vector to compute the prediction path for.
+        tree_index (int or None): If the classifier is an ensemble of trees, it is the index of a target tree to
+            compute the prediction path. If tree_index is set to None, all the trees in the ensemble will be used.
 
     Returns:
-        A TreePath or a list of TreePath's, corresponding to a tree-based or forest-based classifier respectively.
+        A TreePath or a list of TreePath's.
 
     Raises:
-        ValueError: If the class of classifier is not supported.
+        TypeError: If the class of classifier is not supported.
     """
-    x, feature_names = _format_input(x)
-    for f in [_classifier_sklearn]:
-        result = f(classifier, x, feature_names)
+    for f in [_classifier_sklearn, _classifier_xgboost]:
+        result = f(classifier, x, tree_index)
         if result is not None:
             return result
 
-    raise ValueError("{} is not supported.".format(classifier.__class__))
+    raise TypeError("{} is not supported.".format(classifier.__class__))
+
+
+def _ensemble(ensemble, x, tree_index, path_func):
+    if tree_index is not None:
+        return path_func(ensemble[tree_index], x)
+    else:
+        paths = []
+        for tree in ensemble:
+            paths.append(path_func(tree, x))
+        return paths
 
 
 @import_decorator
-def _classifier_sklearn(classifier, x, feature_names):
+def _classifier_sklearn(classifier, x, tree_index):
     from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
     from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
     if isinstance(classifier, (DecisionTreeClassifier, DecisionTreeRegressor)):
-        return TreePath(prediction_path_sklearn(classifier, x, feature_names))
+        return prediction_path_sklearn(classifier, x)
 
     if isinstance(classifier, (RandomForestClassifier, RandomForestRegressor)):
-        paths = []
-        for estimator in classifier.estimators_:
-            paths.append(TreePath(prediction_path_sklearn(estimator, x, feature_names)))
-        return paths
+        return _ensemble(classifier, x, tree_index, prediction_path_sklearn)
+
+
+@import_decorator
+def _classifier_xgboost(classifier, x, tree_index):
+    from xgboost import Booster, XGBModel
+
+    if isinstance(classifier, XGBModel):
+        raise TypeError("Scikit-Learn Wrapper is not supported. Please use xgboost.Booster instead.")
+
+    if isinstance(classifier, Booster):  # assuming the booster is either gbtree or dart
+        ensemble = classifier.get_dump(dump_format="json")
+        return _ensemble(ensemble, x, tree_index, prediction_path_xgboost)
