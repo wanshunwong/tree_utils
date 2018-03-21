@@ -6,10 +6,12 @@ class TreePath:
 
     Attributes:
         path (list): A list of tuples containing the data of all the nodes in the decision path.
+        optional_header (list): A list of strings describing the optional columns.
     """
 
-    def __init__(self, path):
+    def __init__(self, path, optional_header):
         self.path = path
+        self.header = ["Depth", "Node", "Feature", "Feature Value", "Sign", "Threshold"] + optional_header
 
     def __repr__(self):
         return repr(self.path)
@@ -17,7 +19,7 @@ class TreePath:
     def __str__(self):
         return tabulate(
             self.path,
-            headers=["Depth", "Node", "Feature", "Feature Value", "Sign", "Threshold", "Impurity", "Sample Weight"],
+            headers=self.header,
             tablefmt="fancy_grid"
         )
 

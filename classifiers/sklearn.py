@@ -7,6 +7,7 @@ RIGHT_CHILD = 1
 FEATURE = 2
 THRESHOLD = 3
 IMPURITY = 4
+N_NODES_SAMPLES = 5
 WEIGHTED_N_NODES_SAMPLES = 6
 
 
@@ -36,7 +37,7 @@ def prediction_path_sklearn(tree, x):
         sign = "<=" if sign_bool else ">"
         path.append(
             (depth, current_node_id, feature, feature_value, sign, threshold,
-             current_node[IMPURITY], current_node[WEIGHTED_N_NODES_SAMPLES])
+             current_node[IMPURITY], current_node[N_NODES_SAMPLES], current_node[WEIGHTED_N_NODES_SAMPLES])
         )
 
         current_node_id = current_node[LEFT_CHILD] if sign_bool else current_node[RIGHT_CHILD]
@@ -45,6 +46,6 @@ def prediction_path_sklearn(tree, x):
     else:
         path.append(
             (len(path), current_node_id, "", "", "", "",
-             current_node[IMPURITY], current_node[WEIGHTED_N_NODES_SAMPLES])
+             current_node[IMPURITY], current_node[N_NODES_SAMPLES], current_node[WEIGHTED_N_NODES_SAMPLES])
         )
-    return TreePath(path)
+    return TreePath(path, optional_header=["Impurity", "Sample Number", "Sample Weight"])

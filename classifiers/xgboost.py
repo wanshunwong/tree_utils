@@ -41,12 +41,12 @@ def prediction_path_xgboost(tree, x):
             sign_bool = feature_value <= threshold
             sign = "<=" if sign_bool else ">"
             child_id = tree[YES] if sign_bool else tree[NO]
-        path.append((tree[DEPTH], tree[NODEID], feature, feature_value, sign, threshold, "", ""))
+        path.append((tree[DEPTH], tree[NODEID], feature, feature_value, sign, threshold, ""))
 
         children = tree[CHILDREN]
         for child in children:
             if child[NODEID] == child_id:
                 tree = child
     else:
-        path.append((len(path), tree[NODEID], "", "", "", "", tree[LEAF], ""))
-    return TreePath(path)
+        path.append((len(path), tree[NODEID], "", "", "", "", tree[LEAF]))
+    return TreePath(path, optional_header=["Leaf Value"])
