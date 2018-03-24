@@ -95,3 +95,15 @@ class TreePath:
             ))
         else:
             print("The two paths are identical.")
+
+    def to_dataframe(self):
+        """
+        Convert the saved data into a pandas.DataFrame.
+
+        :return: A pandas.DataFrame.
+        """
+        import pandas as pd
+        df = pd.DataFrame(self.path, columns=self.header)
+        df.set_index(["Depth"])
+        df.drop("Depth", axis=1, inplace=True)
+        return df
