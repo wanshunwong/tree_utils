@@ -24,28 +24,27 @@ def prediction_path_sklearn(tree, x):
     x, feature_names = format_input(x, LIST_LIKE)
     path = []
     nodes = tree.tree_.__getstate__()["nodes"]
-    current_node_id = 0
-    current_node = nodes[current_node_id]
+    node_id = 0
+    node = nodes[node_id]
     depth = 0
 
-    while current_node[LEFT_CHILD] != -1:  # not a leaf node
-        feature_id = current_node[FEATURE]
-        feature = feature_names[feature_id]
-        threshold = current_node[THRESHOLD]
+    while node[LEFT_CHILD] != -1:  # not a leaf node
+        feature_id = node[FEATURE]
+        threshold = node[THRESHOLD]
         feature_value = x[feature_id]
         sign_bool = feature_value <= threshold
         sign = "<=" if sign_bool else ">"
         path.append(
-            (depth, current_node_id, feature, feature_value, sign, threshold,
-             current_node[IMPURITY], current_node[N_NODES_SAMPLES], current_node[WEIGHTED_N_NODES_SAMPLES])
+            (depth, node_id, feature_names[feature_id], feature_value, sign, threshold,
+             node[IMPURITY], node[N_NODES_SAMPLES], node[WEIGHTED_N_NODES_SAMPLES])
         )
 
-        current_node_id = current_node[LEFT_CHILD] if sign_bool else current_node[RIGHT_CHILD]
-        current_node = nodes[current_node_id]
+        node_id = node[LEFT_CHILD] if sign_bool else node[RIGHT_CHILD]
+        node = nodes[node_id]
         depth += 1
     else:
         path.append(
-            (len(path), current_node_id, "", "", "", "",
-             current_node[IMPURITY], current_node[N_NODES_SAMPLES], current_node[WEIGHTED_N_NODES_SAMPLES])
+            (len(path), node_id, "", "", "", "",
+             node[IMPURITY], node[N_NODES_SAMPLES], node[WEIGHTED_N_NODES_SAMPLES])
         )
     return TreePath(path, optional_header=["Impurity", "Sample Number", "Sample Weight"])
