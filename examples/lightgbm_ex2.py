@@ -23,10 +23,17 @@ df.loc[~idx2, "mean texture"] = 1
 
 # training
 train_set = lgb.Dataset(df, label=y)
-params = {"boosting_type": "gbdt", "objective": "binary", "num_leaves": 50}
+params = {"boosting_type": "gbdt", "objective": "binary", "num_leaves": 100}
 gbdt = lgb.train(params, train_set, num_boost_round=1, categorical_feature=[1])
 
-# get prediction path
-i = 3
-x = df.iloc[i]
-print(prediction_path(gbdt, x, 0))
+# get prediction paths
+x1 = df.iloc[3]
+p1 = prediction_path(gbdt, x1, 0)
+print(p1)
+
+x2 = df.iloc[5]
+p2 = prediction_path(gbdt, x2, 0)
+print(p2)
+
+# compare the 2 paths
+p1.compare(p2)
