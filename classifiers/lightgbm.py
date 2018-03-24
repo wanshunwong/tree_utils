@@ -22,6 +22,15 @@ LEAF_VALUE = "leaf_value"
 
 
 def prediction_path_lightgbm(tree, x):
+    """Compute the decision path in a lightGBM tree, and return a TreePath object.
+
+    Args:
+        tree (dict): A json dump of a lightGBM tree.
+        x: A feature vector.
+
+    Returns:
+        A TreePath object.
+    """
     tree = tree[TREE_STRUCTURE]
     x, feature_names = format_input(x, LIST_LIKE)
     path = []

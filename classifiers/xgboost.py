@@ -22,7 +22,7 @@ def prediction_path_xgboost(tree, x):
 
     Args:
         tree (str): A (string of) json dump of an xgboost tree.
-        x: A feature vector
+        x: A feature vector.
 
     Returns:
         A TreePath object.

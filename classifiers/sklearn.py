@@ -16,7 +16,7 @@ def prediction_path_sklearn(tree, x):
 
     Args:
         tree: A sklearn tree.
-        x: A feature vector
+        x: A feature vector.
 
     Returns:
         A TreePath object.
