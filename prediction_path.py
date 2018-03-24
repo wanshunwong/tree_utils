@@ -1,3 +1,4 @@
+from classifiers.lightgbm import prediction_path_lightgbm
 from classifiers.sklearn import prediction_path_sklearn
 from classifiers.xgboost import prediction_path_xgboost
 from utilities import import_decorator
@@ -18,7 +19,7 @@ def prediction_path(classifier, x, tree_index=None):
     Raises:
         TypeError: If the class of classifier is not supported.
     """
-    for f in [_classifier_sklearn, _classifier_xgboost]:
+    for f in [_classifier_sklearn, _classifier_xgboost, _classifer_lightgbm]:
         result = f(classifier, x, tree_index)
         if result is not None:
             return result
@@ -58,3 +59,14 @@ def _classifier_xgboost(classifier, x, tree_index):
     if isinstance(classifier, Booster):  # assuming the booster is either gbtree or dart
         ensemble = classifier.get_dump(dump_format="json")
         return _ensemble(ensemble, x, tree_index, prediction_path_xgboost)
+
+
+@import_decorator
+def _classifer_lightgbm(classifier, x, tree_index):
+    from lightgbm import LGBMClassifier, LGBMRegressor, Booster
+    if isinstance(classifier, (LGBMClassifier, LGBMRegressor)):
+        classifier = classifier.booster_
+
+    if isinstance(classifier, Booster):
+        ensemble = classifier.dump_model()["tree_info"]
+        return _ensemble(ensemble, x, tree_index, prediction_path_lightgbm)

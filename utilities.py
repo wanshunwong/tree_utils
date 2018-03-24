@@ -34,7 +34,7 @@ def format_input(x, format_type):
     Raises:
         TypeError: If x is neither a list, a numpy.ndarray, nor a pandas.Series.
     """
-    for f in [_format_list_numpy, _format_pandas, _format_dmatrix]:
+    for f in [_format_list_numpy, _format_pandas, _format_dmatrix, _format_lgb_dataset]:
         result = f(x, format_type=format_type)
         if result is not None:
             return result
@@ -69,4 +69,12 @@ def _format_pandas(x, format_type):
 def _format_dmatrix(x, format_type):
     from xgboost import DMatrix
     if isinstance(x, DMatrix):
-        raise TypeError("DMatrix is currently not supported.")
+        raise TypeError("xgboost.DMatrix is currently not supported. Use numpy.ndarray or pandas.Series instead.")
+
+
+# noinspection PyUnusedLocal
+@import_decorator
+def _format_lgb_dataset(x, format_type):
+    from lightgbm import Dataset
+    if isinstance(x, Dataset):
+        raise TypeError("lightgbm.Dataset is currently not supported. Use numpy.ndarray or pandas.Series instead.")
