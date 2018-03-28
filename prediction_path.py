@@ -54,7 +54,7 @@ def _classifier_xgboost(classifier, x, tree_index):
     from xgboost import Booster, XGBModel
 
     if isinstance(classifier, XGBModel):
-        raise TypeError("Scikit-Learn Wrapper is not supported. Please use xgboost.Booster instead.")
+        classifier = classifier.get_booster()
 
     if isinstance(classifier, Booster):  # assuming the booster is either gbtree or dart
         ensemble = classifier.get_dump(dump_format="json")
